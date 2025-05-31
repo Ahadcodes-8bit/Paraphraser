@@ -10,3 +10,5 @@ A desktop app built with Tkinter that uses phi model via ollama.
 - Responsive UI that doesn’t freeze during model calls thanks to background threading
 
 ![image](https://github.com/user-attachments/assets/2d72d9db-e0bb-4c91-992a-e205b3e7f6aa)
+
+
