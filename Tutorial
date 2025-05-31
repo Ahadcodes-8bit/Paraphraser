@@ -1,0 +1,37 @@
+# FOLLOW THESE STEPS :
+ STEP 1 :
+INSTALL PYTHON
+
+STEP 2 : Verify Tkinter
+python -m tkinter   ( TERMINAL OR CMD )
+
+STEP 3 : Install Ollama CLI
+Download from https://ollama.com/download and install for your OS
+
+STEP 4 : Pull the Phi Model
+ollama pull phi          (TERMINAL OR CMD)
+
+STEP 5 : Install Python ollama Package 
+pip install ollama         (TERMINAL OR CMD)
+
+STEP 6 :
+CREATE A FOLDER FOR YOUR PARAPHRASER 
+
+STEP 7 :
+OPEN VS CODE AND SELECT THE PARAPHRASE FOLDER AND CREATE TWO FILES NAMED PARAPHRASE.py and GUI.py
+
+STEP 8 :
+COPY AND PASTE THE CODE PROVIDED !
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+* NOTE:
+THIS PARAPHRASER WAS BUILT FOR A PC WITH LOW-SPECS IF YOU GOT A PC WITH  16 or 32 gb ram with 16+ VRAM use Mistral instead of phi 
+OR YOU CAN ALSO USE OPEN AI GPT (PAID).
+
+
+
+
+
+
+
+
