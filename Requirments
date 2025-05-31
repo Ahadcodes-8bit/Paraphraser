@@ -1,0 +1,5 @@
+# ALL THE THINGS YOU NEED TO BUILD A PARAPHRASER 
+python 3.x
+Tkinter
+ollama 
+phi model (downloaded via ollama)
