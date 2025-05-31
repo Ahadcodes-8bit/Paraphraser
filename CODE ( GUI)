@@ -1,0 +1,169 @@
+import tkinter as tk
+from tkinter import scrolledtext, messagebox
+import threading
+import ollama
+
+# ========== Phi API Functions ==========
+def paraphrase(text, temperature=0.7, style=None):
+    prompt = f"Paraphrase the following sentence" + (f" in a {style} tone" if style else "") + f":\n\n{text}"
+    response = ollama.chat(
+        model="phi",
+        messages=[{"role": "user", "content": prompt}],
+        options={"temperature": temperature},
+    )
+    return response['message']['content'].strip()
+
+def correct_grammar(text):
+    prompt = f"Correct the grammar and spelling mistakes in the following text:\n\n{text}"
+    response = ollama.chat(
+        model="phi",
+        messages=[{"role": "user", "content": prompt}],
+        options={"temperature": 0.3},
+    )
+    return response['message']['content'].strip()
+
+# ========== Update UI ==========
+def update_output(text):
+    output_text.config(state=tk.NORMAL)
+    output_text.delete("1.0", tk.END)
+    output_text.insert(tk.END, text)
+    output_text.config(state=tk.DISABLED)
+    update_word_count_labels(text)
+
+def update_word_count_labels(text=None):
+    if text is None:
+        text = input_text.get("1.0", tk.END).strip()
+    words = len(text.split())
+    chars = len(text)
+    word_count_label.config(text=f"Words: {words}   Characters: {chars}")
+
+# ========== Background Tasks ==========
+def run_paraphraser():
+    def task():
+        text = input_text.get("1.0", tk.END).strip()
+        if not text:
+            update_output("Please enter some text to paraphrase.")
+            return
+        temperature = temperature_slider.get()
+        style = style_var.get()
+        update_output("Paraphrasing... Please wait.")
+        try:
+            result = paraphrase(text, temperature=temperature, style=style)
+            update_output(result)
+        except Exception as e:
+            update_output(f"Error: {e}")
+    threading.Thread(target=task).start()
+
+def run_grammar_correction():
+    def task():
+        text = input_text.get("1.0", tk.END).strip()
+        if not text:
+            update_output("Please enter some text for grammar correction.")
+            return
+        update_output("Correcting grammar... Please wait.")
+        try:
+            corrected = correct_grammar(text)
+            update_output(corrected)
+        except Exception as e:
+            update_output(f"Error: {e}")
+    threading.Thread(target=task).start()
+
+# ========== Theme Toggle ==========
+def apply_theme():
+    bg = "#1e1e1e" if dark_mode else "white"
+    fg = "white" if dark_mode else "black"
+    btn_bg = "#444" if dark_mode else "SystemButtonFace"
+
+    root.config(bg=bg)
+    for widget in all_widgets:
+        try:
+            widget.config(bg=bg, fg=fg)
+        except:
+            pass
+    input_text.config(bg=bg, fg=fg, insertbackground=fg)
+    output_text.config(bg=bg, fg=fg, insertbackground=fg)
+    temperature_slider.config(bg=bg, fg=fg, highlightbackground=bg, troughcolor="#555" if dark_mode else "#ccc")
+    paraphrase_btn.config(bg=btn_bg, fg=fg)
+    grammar_btn.config(bg=btn_bg, fg=fg)
+    theme_btn.config(bg=btn_bg, fg=fg)
+    style_menu.config(bg=btn_bg, fg=fg, activebackground="#555" if dark_mode else "#eee")
+
+def toggle_theme():
+    global dark_mode
+    dark_mode = not dark_mode
+    apply_theme()
+
+# ========== GUI Setup ==========
+root = tk.Tk()
+root.title("Paraphraser & Grammar Corrector")
+root.geometry("750x700")
+dark_mode = False
+
+all_widgets = []
+
+# Input
+input_label = tk.Label(root, text="Enter your text:", font=("Arial", 12))
+input_label.pack()
+all_widgets.append(input_label)
+
+input_text = scrolledtext.ScrolledText(root, height=8, wrap=tk.WORD)
+input_text.pack(fill="both", expand=True)
+input_text.bind("<KeyRelease>", lambda e: update_word_count_labels())
+
+# Word count
+word_count_label = tk.Label(root, text="Words: 0   Characters: 0", font=("Arial", 10))
+word_count_label.pack()
+all_widgets.append(word_count_label)
+
+# Temp slider
+temperature_label = tk.Label(root, text="Creativity Level (Temperature):", font=("Arial", 10))
+temperature_label.pack()
+all_widgets.append(temperature_label)
+
+temperature_slider = tk.Scale(root, from_=0.0, to=2.0, resolution=0.1, orient=tk.HORIZONTAL)
+temperature_slider.set(0.7)
+temperature_slider.pack()
+
+# Style
+style_label = tk.Label(root, text="Select paraphrasing style:", font=("Arial", 10))
+style_label.pack()
+all_widgets.append(style_label)
+
+style_var = tk.StringVar(value="formal")
+styles = ["formal", "informal", "academic", "conversational", "humorous"]
+style_menu = tk.OptionMenu(root, style_var, *styles)
+style_menu.pack()
+
+# Buttons
+button_frame = tk.Frame(root)
+button_frame.pack(pady=10)
+button_frame.config(bg="white")
+all_widgets.append(button_frame)
+
+paraphrase_btn = tk.Button(button_frame, text="Paraphrase", command=run_paraphraser, font=("Arial", 12), width=15)
+paraphrase_btn.pack(side=tk.LEFT, padx=5)
+
+grammar_btn = tk.Button(button_frame, text="Grammar Correct", command=run_grammar_correction, font=("Arial", 12), width=15)
+grammar_btn.pack(side=tk.LEFT, padx=5)
+
+theme_btn = tk.Button(root, text="Toggle Light/Dark Mode", command=toggle_theme)
+theme_btn.pack(pady=10)
+
+# Output
+output_label = tk.Label(root, text="Output:", font=("Arial", 12))
+output_label.pack()
+all_widgets.append(output_label)
+
+output_text = scrolledtext.ScrolledText(root, height=12, wrap=tk.WORD, state=tk.DISABLED)
+output_text.pack(fill="both", expand=True)
+
+# Add all relevant widgets to themeable list
+all_widgets += [
+    root, input_text, output_text, temperature_slider,
+    style_menu, paraphrase_btn, grammar_btn, theme_btn,
+    output_label, temperature_label, style_label
+]
+
+# Start in light mode
+apply_theme()
+root.mainloop()
